@@ -1,0 +1,26 @@
+{% extends 'flatpages/default.html' %}
+{% load custom_filters %}
+
+{% block title %}
+News
+{% endblock title %}
+
+<!-- В контенте на странице мы выводим сам товар, ID которого было передано в адрес -->
+{% block content %}
+<h1>{{ new.title|censor }}</h1>
+<p style="font-size: 1.5em;">
+    Содержимое новости:
+</p>
+<p>
+    {{ new.text|censor }}
+</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p>&nbsp;</p>
+<p><span style="color: #0000ff;">Дата публикации новости: {{ new.time_in| date:'d-M-Y h:m' }}</span></p>
+{% endblock content %}
