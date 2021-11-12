@@ -1,9 +1,14 @@
-from django.views.generic import ListView, DetailView, UpdateView, CreateView, DeleteView
+from django.views.generic import ListView, DetailView, UpdateView, CreateView, DeleteView, TemplateView
 from .models import *
 from django.shortcuts import render
 from django.core.paginator import Paginator  # импортируем класс, позволяющий удобно осуществлять постраничный вывод
 from .filters import PostFilter  # импортируем недавно написанный фильтр
 from .forms import PostForm
+from django.shortcuts import redirect
+from django.contrib.auth.models import Group
+from django.contrib.auth.decorators import login_required
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.contrib.auth.mixins import PermissionRequiredMixin
 
 
 # class NewsListN(ListView):
@@ -32,7 +37,7 @@ class NewsListN(ListView):
     context_object_name = 'post'
     queryset = Post.objects.filter(noa='N')
     ordering = ['-id']
-    paginate_by =  5 # поставим постраничный вывод в один элемент
+    paginate_by = 5  # поставим постраничный вывод в один элемент
     # form_class = PostForm
 
     def get_filter(self):
@@ -62,15 +67,30 @@ class NewsDetailView(DetailView):
     queryset = Post.objects.all()
 
 
-class NewsCreateView(CreateView):
+class NewsCreateView(PermissionRequiredMixin, CreateView):
     template_name = 'news_create.html'
     form_class = PostForm
+    permission_required = ('news.add_post',)
+
+    def form_valid(self, form):
+        self.object = form.save(commit=False)
+        self.object.author = Author.objects.get_or_create(name=self.request.user)[0]
+        return super().form_valid(form)
 
 
 # дженерик для редактирования объекта
-class NewsUpdateView(UpdateView):
+class NewsUpdateView(PermissionRequiredMixin, UpdateView):
     template_name = 'news_create.html'
     form_class = PostForm
+    permission_required = ('news.change_post',)
+
+    def dispatch(self, request, *args, **kwargs):
+        user = request.user
+        author = Author.objects.get(name=user)
+        if not author.post_set.filter(pk=kwargs.get('pk')).exists():
+            return self.handle_no_permission()
+        return super().dispatch(request, *args, **kwargs)
+
 
     # метод get_object мы используем вместо queryset, чтобы получить информацию об объекте, который мы собираемся редактировать
     def get_object(self, **kwargs):
@@ -79,7 +99,34 @@ class NewsUpdateView(UpdateView):
 
 
 # дженерик для удаления товара
-class NewsDeleteView(DeleteView):
+class NewsDeleteView(LoginRequiredMixin, DeleteView):
     template_name = 'news_delete.html'
     queryset = Post.objects.all()
     success_url = '/news/'
+
+    def dispatch(self, request, *args, **kwargs):
+        user = request.user
+        author = Author.objects.get(name=user)
+        if not author.post_set.filter(pk=kwargs.get('pk')).exists():
+            return self.handle_no_permission()
+        return super().dispatch(request, *args, **kwargs)
+
+
+class ProfileView(LoginRequiredMixin, TemplateView):
+    template_name = 'profile.html'
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context['is_not_authors'] = not self.request.user.groups.filter(name='authors').exists()
+        return context
+
+@login_required
+def upgrade_me(request):
+    user = request.user
+    premium_group = Group.objects.get(name='authors')
+    if not request.user.groups.filter(name='authors').exists():
+        premium_group.user_set.add(user)
+        Author.objects.create(name=user)
+    return redirect('/')
+
+

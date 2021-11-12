@@ -1,5 +1,6 @@
 from django.urls import path
 from .views import *
+from django.contrib.auth.views import LogoutView
 
 urlpatterns = [
     path('', NewsListN.as_view()),
@@ -9,4 +10,9 @@ urlpatterns = [
     path('create/', NewsCreateView.as_view(), name='news_create'),
     path('create/<int:pk>', NewsUpdateView.as_view(), name='news_update'),
     path('delete/<int:pk>', NewsDeleteView.as_view(), name='news_delete'),
+    path('logout/',
+         LogoutView.as_view(template_name = 'logout.html'),
+         name='logout'),
+    path('profile/', ProfileView.as_view()),
+    path('upgrade/', upgrade_me, name='upgrade')
 ]
