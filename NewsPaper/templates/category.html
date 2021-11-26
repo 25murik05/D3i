@@ -1,14 +1,15 @@
 {% extends 'flatpages/default.html' %}
 {% load custom_filters %}
+
 {% block title %}
-Post
+Category
 {% endblock title %}
 
 {% block content %}
-<h3>Информация о новости</h3>
+<h3>Выберите категорию для подписки:</h3>
 <form method="POST">
     {% csrf_token %}
     {{ form }} <!-- Теперь нам нужна только готовая форма и кнопка -->
-    <input type="submit" value="Добавить новость">
+    <input type="submit" value="Подписаться!">
 </form>
 {% endblock content %}

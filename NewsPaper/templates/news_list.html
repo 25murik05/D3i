@@ -48,7 +48,10 @@ Post
     {% else %}
         <h2>Новостей нет!</h2>
     {% endif %}
-    <a href="{% url 'news_create' %}">Добавить новый товар</a> <br>
+
+    <button> <a href="/news/category/"> Выбрать категорию!</a> </button>
+
+    <a href="{% url 'news_create' %}">Добавить новость</a> <br>
     {% if is_paginated %}
         <!-- Если доступна предыдущая страница, то даём ссылку на неё и самую первую страницу -->
         {% if page_obj.has_previous %}

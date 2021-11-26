@@ -10,5 +10,6 @@ class PostFilter(FilterSet):
         fields = {
             'heading': ['icontains'],
             'author__name': ['exact'],
+            'category': ['exact'],
 
         }

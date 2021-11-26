@@ -16,8 +16,16 @@
 #         verbose_name_plural = 'Новости'
 
 from django.db import models
-from django.contrib.auth.models import User
 from django.db.models import Sum
+from django.contrib.auth.models import AbstractUser
+from django.contrib.auth import get_user_model
+
+
+class CustomUser(AbstractUser):
+    subscribe_category = models.ForeignKey('Category', on_delete=models.CASCADE, null=True, blank=True)
+
+
+User = get_user_model()
 
 
 class Author(models.Model):
