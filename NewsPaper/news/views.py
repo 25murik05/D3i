@@ -1,5 +1,5 @@
 import requests
-from django.views.generic import ListView, DetailView, UpdateView, CreateView, DeleteView, TemplateView, FormView
+from django.views.generic import ListView, DetailView, UpdateView, CreateView, DeleteView, TemplateView, FormView, View
 from .models import *
 from django.shortcuts import render
 from django.core.paginator import Paginator  # импортируем класс, позволяющий удобно осуществлять постраничный вывод
@@ -15,6 +15,10 @@ from django.core.mail import EmailMultiAlternatives
 from django.template.loader import render_to_string
 from django.db.models.signals import ModelSignal
 from datetime import datetime, date, time
+from django.core.cache import cache
+import logging
+from django.utils.translation import gettext as _  # импортируем функцию для перевода
+from django.http import HttpResponse
 # class NewsListN(ListView):
 #     model = Post
 #     template_name = 'news.html'
@@ -34,8 +38,12 @@ from datetime import datetime, date, time
 #     context_object_name = 'new'
 #     queryset = Post.objects.filter(noa='N')
 
+# logger = logging.getLogger(__name__)
+
 custom_create_signal = ModelSignal(use_caching=True)
 custom_update_signal = ModelSignal(use_caching=True)
+
+
 class NewsListN(ListView):
     model = Post
     template_name = 'news_list.html'
@@ -57,10 +65,17 @@ class NewsListN(ListView):
         return context
 
 
-
 class NewsDetailView(DetailView):
     template_name = 'news_detail.html'
     queryset = Post.objects.all()
+
+    # def get_object(self, *args, **kwargs):
+    #     # obj = cache.get(f'post-{self.kwargs["pk"]}', None)
+    #
+    #     # if not obj:
+    #     obj = super().get_object(queryset=kwargs['queryset'])
+    #         # cache.set(f'post-{self.kwargs["pk"]}', obj)
+    #     return obj
 
 
 class NewsCreateView(LoginRequiredMixin, PermissionRequiredMixin,  CreateView):
@@ -72,7 +87,7 @@ class NewsCreateView(LoginRequiredMixin, PermissionRequiredMixin,  CreateView):
         self.object = form.save(commit=False)
         self.object.author = Author.objects.get_or_create(name=self.request.user)[0]
         # user = self.request.user
-        all_post_author = self.object.author.post_set.all()
+        all_post_author = self.object.author.post_set.all() # Добавили все посты автора
         count_today_post = 0
         for post in all_post_author:
             if post.author == self.object.author:
@@ -211,6 +226,13 @@ class SubscribeCategory(FormView):
 
 
 
+# Create your views here.
+
+class Index(View):
+    def get(self, request):
+        string = _('Hello world')
+
+        return HttpResponse(string)
 
 
 

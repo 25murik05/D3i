@@ -19,6 +19,7 @@ from django.db import models
 from django.db.models import Sum
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth import get_user_model
+from django.core.cache import cache
 
 
 class CustomUser(AbstractUser):
@@ -87,6 +88,10 @@ class Post(models.Model):
 
     def get_absolute_url(self):  # добавим абсолютный путь, чтобы после создания нас перебрасывало на страницу с товаром
         return f'/news/{self.id}'
+
+    # def save(self, *args, **kwargs):
+    #     super().save(*args, **kwargs) # сначала вызываем метод родителя, чтобы объект сохранился
+    #     cache.delete(f'post-{self.pk}') # затем удаляем его из кэша, чтобы сбросить его
 
 
 class PostCategory(models.Model):

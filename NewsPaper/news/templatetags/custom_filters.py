@@ -20,7 +20,7 @@ def censor(value):
     text = value.split()
     for word in text:
         if word.lower() in CENSORED:
-            value = value.replace(word, '****')
+            value = value.replace(word, word[0] + '*'*(len(word)-2) + word[-1])
     return value
 
 
